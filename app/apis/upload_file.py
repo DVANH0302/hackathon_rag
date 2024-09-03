@@ -30,8 +30,8 @@ async def create_upload_file(file: UploadFile = File(...)) -> Dict[str, str]:
         # elif file.filename.endswith('.docx'):
         #     file_content = read_docx_file(file_stream)
         elif file.filename.endswith('.pdf'):
-            reader = PdfReader(io.BytesIO(contents))
-            text = "\n".join([page.extract_text() for page in reader.pages])
+            reader = PdfReader(BytesIO(contents))
+            file_content = "\n".join([page.extract_text() for page in reader.pages])
         else:
             return {"message": "Unsupported file type"}
 
