@@ -24,6 +24,14 @@ Base = declarative_base()
 #    "postgresql+asyncpg://scott:tiger@localhost/test",
 #     echo=True,
 # )
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
 
 def test_connection():
     # Create a connection
@@ -32,5 +40,5 @@ def test_connection():
         result = connection.execute(text("SELECT 1"))
         print(result.fetchone())
 
-if __name__ == "__main__":
-    test_connection()
+# if __name__ == "__main__":
+#     test_connection()
