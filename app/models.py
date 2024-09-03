@@ -16,3 +16,8 @@ class ChatSession(Base):
     prompt = Column(String)
     response = Column(String)
     createdAt = Column(DateTime, default=None)
+
+
+class Documents(Base):
+    __tablename__ = "Documents"
+    id = Column(Integer, primary_key = True)
