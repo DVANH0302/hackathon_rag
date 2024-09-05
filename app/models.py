@@ -1,7 +1,8 @@
-from sqlite3 import Time
 from .database import Base
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from pgvector.sqlalchemy import Vector
+from datetime import datetime
+
 
 # class ChatSession(Base):
 #     __tablename__ = "chatSession"
@@ -15,9 +16,13 @@ class ChatSession(Base):
     id = Column(Integer, primary_key = True)
     prompt = Column(String)
     response = Column(String)
-    createdAt = Column(DateTime, default=None)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 class Documents(Base):
     __tablename__ = "Documents"
     id = Column(Integer, primary_key = True)
+    file_name = Column(String)
+    content  = Column(String)
+
+ 

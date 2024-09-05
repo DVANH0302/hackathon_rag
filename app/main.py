@@ -15,6 +15,8 @@ app = FastAPI()
 app.include_router(upload_file.router)
 app.include_router(generate_response.router)
 
+
+
 @app.get("/")
 async def root():
     return {"message": "Welcome to the FastAPI application!"}
