@@ -2,32 +2,17 @@ from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from typing import Dict
 from io import BytesIO
 from sqlalchemy.orm import Session
-from ..models import Documents
-import os
-from pypdf import PdfReader
+from ..models import DocumentEmbedding
 from app.database import get_db
 from datetime import datetime
+from pypdf import PdfReader
+from .generate_embedding import generate_embedding  # Ensure correct import
 
 router = APIRouter()
-
 UPLOAD_DIRECTORY = "../uploaded_files/"
 
-def read_txt_file(contents: bytes) -> str:
+def process_txt_file(contents: bytes) -> str:
     return contents.decode('utf-8')
-
-def read_pdf_file(file: BytesIO) -> str:
-    text = []
-    pdf = PdfReader(file)
-    for page in pdf.pages:
-        text.append(page.extract_text())
-    return "\n".join(text)
-
-# def read_docx_file(file: BytesIO) -> str:
-#     doc = Document(file)
-#     text = []
-#     for para in doc.paragraphs:
-#         text.append(para.text)
-#     return "\n".join(text)
 
 @router.post("/upload-file/")
 async def create_upload_file(file: UploadFile = File(...), db: Session = Depends(get_db)):
@@ -35,31 +20,45 @@ async def create_upload_file(file: UploadFile = File(...), db: Session = Depends
         raise HTTPException(status_code=400, detail="Unsupported file type")
 
     try:
-
-
-        # Save the file to the filesystem
         contents = await file.read()
         
-        # Read file content based on file type
         if file.content_type == "application/pdf":
-            file_text = read_pdf_file(BytesIO(contents))
+            pdf = PdfReader(BytesIO(contents))
+            chunk_size = 1000
+            for page_num, page in enumerate(pdf.pages):
+                try:
+                    page_text = page.extract_text()
+                    if page_text:
+                        chunks = [page_text[i:i + chunk_size] for i in range(0, len(page_text), chunk_size)]
+                        for chunk in chunks:
+                            embedding_response = await generate_embedding(chunk)
+                            print(f"Embedding for chunk: {embedding_response}")
+
+                            new_embedding = DocumentEmbedding(
+                                file_name=file.filename,
+                                content_type=file.content_type,
+                                embedding=embedding_response["embedding"],  # Ensure this matches the response structure
+                                created_at=datetime.now()
+                            )
+
+                            db.add(new_embedding)
+                    else:
+                        print(f"No text extracted from page {page_num}")
+                except Exception as e:
+                    print(f"Error processing page {page_num}: {e}")
+                    continue
+
+            # Commit changes after processing all pages
+            try:
+                db.commit()
+            except Exception as e:
+                db.rollback()
+                print(f"Error committing to the database: {e}")
+                raise HTTPException(status_code=500, detail="Error saving embeddings to the database")
+
         elif file.content_type == "text/plain":
-            file_text = read_txt_file(contents)
-        # elif file.content_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-        #     file_text = read_docx_file(BytesIO(contents))
-        else:
-            file_text = None  # Or handle other file types
-
-        new_document = Documents(
-            file_name = file.filename,
-            content = file_text
-        )
-
-        db.add(new_document)
-        db.commit()
-        db.refresh(new_document)
-
-        return {"filename": new_document.file_name,  "content": file_text}
+            # Process text files here if needed
+            pass 
 
     except Exception as e:
         print(f"An error occurred: {e}")

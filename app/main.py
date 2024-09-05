@@ -1,9 +1,10 @@
 from fastapi import FastAPI
+
 from .crud import *
 from .models import * 
 from .schemas import *
 from .database import SessionLocal, engine, get_db
-from app.apis import upload_file, generate_response
+from app.apis import upload_file, generate_response, generate_embedding
 
 
 # Initialize the database
@@ -14,7 +15,7 @@ app = FastAPI()
 # Include routers
 app.include_router(upload_file.router)
 app.include_router(generate_response.router)
-
+app.include_router(generate_embedding.router, prefix="/api")
 
 
 @app.get("/")
