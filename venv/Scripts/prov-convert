@@ -1,4 +1,4 @@
-#!C:\Users\Computer\OneDrive\Desktop\hackathon_rag\venv\Scripts\python.exe
+#!c:\users\computer\onedrive\desktop\hackathon_rag\venv\scripts\python.exe
 # encoding: utf-8
 """
 convert -- Convert PROV-JSON to RDF, PROV-N, PROV-XML, or graphical formats (SVG, PDF, PNG)

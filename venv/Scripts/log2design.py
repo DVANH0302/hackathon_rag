@@ -1,4 +1,4 @@
-#!C:\Users\Computer\OneDrive\Desktop\hackathon_rag\venv\Scripts\python.exe
+#!c:\users\computer\onedrive\desktop\hackathon_rag\venv\scripts\python.exe
 # Create Lyman/Fitz style long flat Design Files from plain-text onset files
 # EKK / June 2015
 # Python 2/3 compatibile, depends on Pandas and Numpy/Scipy

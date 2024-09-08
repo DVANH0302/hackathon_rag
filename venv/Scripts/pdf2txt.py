@@ -1,4 +1,4 @@
-#!C:\Users\Computer\OneDrive\Desktop\hackathon_rag\venv\Scripts\python.exe
+#!c:\users\computer\onedrive\desktop\hackathon_rag\venv\scripts\python.exe
 import sys
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfparser import PDFParser
