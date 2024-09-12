@@ -92,6 +92,7 @@ def retrieve_tool(file_name: str) -> Dict:
         
         vector_query_engine = vector_index.as_query_engine(
         similarity_top_k=2,
+
         # filters=MetadataFilters.from_dicts(
         #         metadata_dicts,
         #         condition=FilterCondition.OR
