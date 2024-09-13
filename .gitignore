@@ -13,3 +13,5 @@ __pycache__/
 *.pyc
 
 alembic.ini
+
+venv/
