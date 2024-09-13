@@ -12,7 +12,7 @@ class PromptRequest(BaseModel):
     prompt: str
 
 
-class File(BaseModel):
+class FileCreate(BaseModel):
     file_name: str
     content_type: str
 

@@ -32,8 +32,8 @@ DB_HOST = os.getenv('DB_HOST')
 DB_PORT = os.getenv('DB_PORT')
 DB_NAME = os.getenv('DB_NAME')
 
-UPLOAD_DIR = r".\app\uploaded_data"
-
+UPLOAD_DIR = "./app/uploaded_data"
+print(os.getcwd())
 
 # Ensure the upload directory exists
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -78,7 +78,7 @@ def load_file_first_time(file_path:str, file_name:str):
         return None
 
 
-async def retrieve_tool(file_name: str) -> Dict:
+def retrieve_tool(file_name: str) -> Dict:
     try:
         vector_store = get_vector_store(table_name=f"{file_name[:-4]}_vector")
         storage_context = StorageContext.from_defaults(vector_store=vector_store) 
@@ -124,8 +124,13 @@ async def retrieve_tool(file_name: str) -> Dict:
         return None
 
 def build_agent(upload_dir: str = UPLOAD_DIR) -> OpenAIAgent:
+    print(os.listdir(upload_dir))  # Debugging
     files = [f for f in os.listdir(upload_dir) if os.path.isfile(os.path.join(upload_dir, f))]
-    print(files)
+    print(f"Files found in upload_dir: {files}")  # Debugging
+
+    if not files:
+        raise ValueError(f"No files found in {upload_dir}. Please upload files.")
+
     documents_to_tools_dict = {}
 
     for file_name in files:
@@ -160,5 +165,3 @@ if __name__ == "__main__":
         print(response)
     except Exception as e:
         logger.error(f"An error occurred: {e}")
-
-

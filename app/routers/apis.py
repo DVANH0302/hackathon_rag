@@ -37,66 +37,95 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 
-@router.get("/file/", response_model=schemas.File)
+@router.get("/file/", response_model=schemas.FileCreate)
 def read_file(name:str, db:Session = Depends(get_db)):
     file = crud.get_filename(db, file_name = name)
     if file is None:
         return False
     return True
 
-@router.post("/upload-file/", response_model = schemas.File)
+@router.post("/upload-file/", response_model=List[schemas.FileCreate])
 async def create_upload_file(
     files: List[UploadFile] = File(...), 
     db: Session = Depends(get_db),
     background_task: BackgroundTasks = None
 ):
-    ## ADD document info to document table 
     uploaded_files = []
-
-            
 
     for file in files: 
         try:
             if not file.content_type.startswith("text/") and not file.content_type.startswith("application/"):
                 raise HTTPException(status_code=400, detail="Unsupported file type")
 
-            file_exists = read_file(name=file.filename, db = db)
-            if not file_exists:
-                background_tasks.add_task(load_file_first_time, file_path, file.filename)
-
-
-
             contents = await file.read()
-            file_path = os.path.join(upload_dir, file.filename) 
+            file_path = os.path.join(upload_dir, file.filename)
             print(f"Saving file to: {file_path}")       
             async with aiofiles.open(file_path, 'wb') as f:
                 await f.write(contents)
             
+            file_exists = read_file(name=file.filename, db=db)
+            if not file_exists:
+                load_file_first_time(os.path.join(upload_dir, file.filename), file.filename)
+        
             # save file info to database
-            document = schemas.File(file_name = file.file_name, content_type = file.content_type)
-            db_file = crud.add_document(db = db, file = file_create)
+            document = schemas.FileCreate(file_name=file.filename, content_type=file.content_type)
+            db_file = crud.add_document(db=db, file=document)
             uploaded_files.append(db_file)
         except Exception as e:
             print(f"An error occurred: {e}")
             raise HTTPException(status_code=500, detail="There was an error processing the file")
         finally:
-            await file.close()        
+            await file.close()
+
+    return uploaded_files
+
+
+# @router.post("/upload-file/", response_model = schemas.FileCreate)
+# async def create_upload_file(
+#     files: List[UploadFile] = File(...), 
+#     db: Session = Depends(get_db),
+#     background_task: BackgroundTasks = None
+# ):
+#     ## ADD document info to document table 
+#     uploaded_files = []
+
+            
+
+#     for file in files: 
+#         try:
+#             if not file.content_type.startswith("text/") and not file.content_type.startswith("application/"):
+#                 raise HTTPException(status_code=400, detail="Unsupported file type")
+
+
+#             contents = await file.read()
+#             file_path = os.path.join(upload_dir, file.filename) 
+#             print(f"Saving file to: {file_path}")       
+#             async with aiofiles.open(file_path, 'wb') as f:
+#                 await f.write(contents)
+            
+#             file_exists = read_file(name=file.filename, db = db)
+#             if not file_exists:
+#                 load_file_first_time(os.path.join(upload_dir, file.filename),file.filename)
+           
+#             # save file info to database
+#             document = schemas.FileCreate(file_name = file.filename, content_type = file.content_type)
+#             db_file = crud.add_document(db = db, file = document)
+#             uploaded_files.append(db_file)
+#         except Exception as e:
+#             print(f"An error occurred: {e}")
+#             raise HTTPException(status_code=500, detail="There was an error processing the file")
+#         finally:
+#             await file.close()        
 
     
 
-    return {"result": "Upload Done", "files": uploaded_files}
+#     return True
 
-def get_query(query):
-    agent = build_agent() 
-    agent.query(query)
-    return agent
+
 
 @router.post("/query/")
-def query():
-    agent = get_query()
-    response = agent.query(
-        "Tell me about the evaluation dataset used in LongLoRA, "
-        "and then tell me about the evaluation results"
-    )
+def query(request: str ):
+    agent = build_agent()
+    response = agent.query(request)
     return response
 

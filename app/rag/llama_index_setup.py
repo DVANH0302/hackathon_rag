@@ -93,17 +93,13 @@ def retrieve_tool(file_name: str) -> Dict:
         vector_query_engine = vector_index.as_query_engine(
         similarity_top_k=2,
 
-        # filters=MetadataFilters.from_dicts(
-        #         metadata_dicts,
-        #         condition=FilterCondition.OR
-        #     )
         )
         
         vector_tool = QueryEngineTool(
             query_engine=vector_query_engine,
             metadata=ToolMetadata(
                 name=f"vector_tool_{file_name[:-4]}",
-                description=f"Use this tool for questions about {file_name}",
+                description=f"Use this tool if you have specific questions over {file_name}",
             ),
         )
 

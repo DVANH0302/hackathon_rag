@@ -11,3 +11,6 @@
 # Ignore Python bytecode files
 __pycache__/
 *.pyc
+
+#Ignore alembic folder
+alembic/

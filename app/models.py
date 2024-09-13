@@ -1,6 +1,5 @@
 from .database import Base
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
-from pgvector.sqlalchemy import Vector
 from datetime import datetime
 
 
