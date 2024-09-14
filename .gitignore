@@ -16,4 +16,4 @@ alembic.ini
 
 venv/
 
-uploaded_data/
+app/uploaded_data/
