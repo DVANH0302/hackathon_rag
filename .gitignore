@@ -15,3 +15,5 @@ __pycache__/
 alembic.ini
 
 venv/
+
+uploaded_data/

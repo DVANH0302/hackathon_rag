@@ -82,11 +82,12 @@ def load_file_first_time(file_path:str, file_name:str):
 
 def retrieve_tool(file_name: str) -> Dict:
     try:
+        # print(f"{file_name[:-4]}_vector")
         vector_store = get_vector_store(table_name=f"{file_name[:-4]}_vector")
-        storage_context = StorageContext.from_defaults(vector_store=vector_store) 
         vector_index = VectorStoreIndex.from_vector_store(vector_store = vector_store)
-        nodes = vector_index.docstore.docs.values()
-        summary_index = SummaryIndex(nodes)
+        # nodes = vector_index.docstore.docs.values()
+        # print("nodes:", nodes)
+        # summary_index = SummaryIndex(nodes)
         print(f"Loaded existing VectorStoreIndex for {file_name}")
 
         
@@ -103,10 +104,15 @@ def retrieve_tool(file_name: str) -> Dict:
             ),
         )
 
-        summary_query_engine = summary_index.as_query_engine(
+        # summary_query_engine = summary_index.as_query_engine(
+        #         response_mode="tree_summarize",
+        #         use_async=True,
+        #     )        
+        summary_query_engine = vector_index.as_query_engine(
                 response_mode="tree_summarize",
                 use_async=True,
             )
+
         summary_tool = QueryEngineTool.from_defaults(
             name=f"summary_tool_{file_name[:-4]}",
             query_engine=summary_query_engine,
@@ -124,7 +130,7 @@ def retrieve_tool(file_name: str) -> Dict:
 
 def build_agent(upload_dir: str = UPLOAD_DIR) -> OpenAIAgent:
     files = [f for f in os.listdir(upload_dir) if os.path.isfile(os.path.join(upload_dir, f))]
-    print(files)
+    # print(files)
     documents_to_tools_dict = {}
 
     for file_name in files:

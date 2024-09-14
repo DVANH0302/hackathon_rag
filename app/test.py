@@ -39,9 +39,9 @@ print(os.getcwd())
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
-def get_vector_store(table_name: str) -> PGVectorStore:
+def get_vector_store(table_name: str):
     try:
-        return PGVectorStore.from_params(
+        vector_store =  PGVectorStore.from_params(
             database=DB_NAME,
             host=DB_HOST,
             password=DB_PASSWORD,
@@ -56,6 +56,7 @@ def get_vector_store(table_name: str) -> PGVectorStore:
                 "hnsw_dist_method": "vector_cosine_ops",
             },
         )
+        return vector_store
     except Exception as e:
         logger.error(f"Failed to create vector store: {e}")
         raise
@@ -81,10 +82,10 @@ def load_file_first_time(file_path:str, file_name:str):
 def retrieve_tool(file_name: str) -> Dict:
     try:
         vector_store = get_vector_store(table_name=f"{file_name[:-4]}_vector")
-        storage_context = StorageContext.from_defaults(vector_store=vector_store) 
+
         vector_index = VectorStoreIndex.from_vector_store(vector_store = vector_store)
+        print(vector_index.as_query_engine().query("what is this file about?"))
         nodes = vector_index.docstore.docs.values()
-        summary_index = SummaryIndex(nodes)
         print(f"Loaded existing VectorStoreIndex for {file_name}")
 
         
@@ -104,7 +105,7 @@ def retrieve_tool(file_name: str) -> Dict:
             ),
         )
 
-        summary_query_engine = summary_index.as_query_engine(
+        summary_query_engine = vector_index.as_query_engine(
                 response_mode="tree_summarize",
                 use_async=True,
             )
